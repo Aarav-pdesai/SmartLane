@@ -2,7 +2,7 @@ import cv2
 import pandas as pd
 from ultralytics import YOLO
 from tracker import Tracker
-from util import read_license_plate
+from util import read_license_plate, preprocess_license_plate
 import mysql.connector
 from datetime import datetime
 
@@ -25,27 +25,6 @@ user="root",
 password="1234",
 database="license_plates_db")
 cur = conn.cursor()
-
-    
-
-def preprocess_license_plate(license_plate_crop):
-    # Resize the image
-    resized = cv2.resize(license_plate_crop, (300, 100), interpolation=cv2.INTER_LINEAR)
-    
-    # Convert to grayscale
-    gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-    
-    # Denoise the image
-    denoised = cv2.GaussianBlur(gray, (5, 5), 0)
-    
-    # Enhance contrast using CLAHE
-    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
-    enhanced = clahe.apply(denoised)
-    
-    # Apply adaptive thresholding
-    binary = cv2.adaptiveThreshold(enhanced, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
-    
-    return binary
 
 def insert_license_plate_data(frame_number, car_id, license_plate, time_of_offense, vehicle_class):
        
@@ -90,7 +69,7 @@ while True:
 
         # cv2.rectangle(frame, (x3, y3), (x4, y4), (0, 255, 0), 1)
         # cv2.putText(frame, class_list[class_id], (x3, y3 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-
+        # uncomment above lines if you want to see bounding boxes and vehicle labels
         line_y = 350
         red_xleft = 250
         red_xright = 500
@@ -187,4 +166,3 @@ cv2.destroyAllWindows()
 '''_ is for placeholder'''
 
 '''set default offense = driving in wrong lane in the database'''
-'''put table creation code on github'''

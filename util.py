@@ -1,8 +1,28 @@
 import string
 import easyocr
+import cv2 
 
 # Initialize the OCR reader
 reader = easyocr.Reader(["en"], gpu=False)
+
+def preprocess_license_plate(license_plate_crop):
+    # Resize the image
+    resized = cv2.resize(license_plate_crop, (300, 100), interpolation=cv2.INTER_LINEAR)
+    
+    # Convert to grayscale
+    gray = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+    
+    # Denoise the image
+    denoised = cv2.GaussianBlur(gray, (5, 5), 0)
+    
+    # Enhance contrast using CLAHE
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    enhanced = clahe.apply(denoised)
+    
+    # Apply adaptive thresholding
+    binary = cv2.adaptiveThreshold(enhanced, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+    
+    return binary
 
 # Mapping dictionaries for character conversion
 dict_char_to_int = {"O": "0", "I": "1", "J": "3", "A": "4", "G": "6", "S": "5"}
